@@ -38,3 +38,11 @@ func (l *Logger) Info(ctx context.Context, msg string, fields ...zap.Field) {
 
 	l.l.Info(msg, fields...)
 }
+
+func (l *Logger) Fatal(ctx context.Context, msg string, fields ...zap.Field) {
+	if ctx.Value(RequestId) != nil {
+		fields = append(fields, zap.String(RequestId, ctx.Value(RequestId).(string)))
+	}
+
+	l.l.Fatal(msg, fields...)
+}
