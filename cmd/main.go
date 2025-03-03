@@ -22,7 +22,7 @@ func main() {
 
 	cfg, err := config.New()
 	if err != nil {
-		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to connect to db", zap.Error(err))
+		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to create configs", zap.Error(err))
 	}
 
 	db, err := postgres.NewDB(cfg.Postgres)
