@@ -50,7 +50,7 @@ func (l *Logger) Fatal(ctx context.Context, msg string, fields ...zap.Field) {
 	l.l.Fatal(msg, fields...)
 }
 
-func InterceptorunaryInterceptor(ctx context.Context,
+func Interceptor(ctx context.Context,
 	req any,
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,

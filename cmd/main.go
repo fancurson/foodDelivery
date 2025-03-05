@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"delivery/internal/config"
-	test "delivery/pkg/api/test"
+	test "delivery/pkg/api/test/api"
 	"delivery/pkg/logger"
 	"delivery/pkg/postgres"
 	"delivery/pkg/service"
@@ -37,7 +37,9 @@ func main() {
 	}
 
 	srv := service.New()
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(logger.Interceptor),
+	)
 	test.RegisterOrderServiceServer(server, srv)
 
 	if err := server.Serve(lis); err != nil {
