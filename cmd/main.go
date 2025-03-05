@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"delivery/internal/config"
-	test "delivery/pkg/api/test/api"
+	test "delivery/pkg/api/test"
 	"delivery/pkg/logger"
 	"delivery/pkg/postgres"
 	"delivery/pkg/service"

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	test "delivery/pkg/api/test/api"
+	test "delivery/pkg/api/test"
 	"sync"
 
 	"github.com/google/uuid"
