@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -18,6 +20,8 @@ import (
 func main() {
 
 	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
 	ctx, _ = logger.New(ctx)
 
 	cfg, err := config.New()
@@ -42,7 +46,16 @@ func main() {
 	)
 	test.RegisterOrderServiceServer(server, srv)
 
-	if err := server.Serve(lis); err != nil {
-		logger.GetLoggerFromCtx(ctx).Info(ctx, "failed to serve", zap.Error(err))
+	go func() {
+		if err := server.Serve(lis); err != nil {
+			logger.GetLoggerFromCtx(ctx).Info(ctx, "failed to serve", zap.Error(err))
+		}
+	}()
+
+
+	select {
+	case <-ctx.Done():
+		server.Stop()
+
 	}
 }
