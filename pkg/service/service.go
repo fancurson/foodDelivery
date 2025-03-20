@@ -18,7 +18,9 @@ type Service struct {
 }
 
 func New() *Service {
-	return &Service{}
+	return &Service{
+		orders: map[string]*test.Order{},
+	}
 }
 
 func (s *Service) CreateOrder(ctx context.Context, req *test.CreateOrderRequest) (*test.CreateOrderResponse, error) {

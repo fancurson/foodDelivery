@@ -22,7 +22,10 @@ func main() {
 	ctx := context.Background()
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
-	ctx, _ = logger.New(ctx)
+	ctx, err := logger.New(ctx)
+	if err != nil {
+		log.Fatalf("failed to initialize logger: %v", err)
+	}
 
 	cfg, err := config.New()
 	if err != nil {
@@ -51,7 +54,6 @@ func main() {
 			logger.GetLoggerFromCtx(ctx).Info(ctx, "failed to serve", zap.Error(err))
 		}
 	}()
-
 
 	select {
 	case <-ctx.Done():

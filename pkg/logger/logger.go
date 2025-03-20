@@ -31,7 +31,11 @@ func New(ctx context.Context) (context.Context, error) {
 }
 
 func GetLoggerFromCtx(ctx context.Context) *Logger {
-	return ctx.Value(Key).(*Logger)
+	l, ok := ctx.Value(Key).(*Logger)
+	if !ok || l == nil {
+		return &Logger{zap.NewNop()} // Возвращаем "пустой" логгер, чтобы избежать паники
+	}
+	return l
 }
 
 func (l *Logger) Info(ctx context.Context, msg string, fields ...zap.Field) {
