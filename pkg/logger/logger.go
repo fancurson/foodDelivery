@@ -54,18 +54,22 @@ func (l *Logger) Fatal(ctx context.Context, msg string, fields ...zap.Field) {
 	l.l.Fatal(msg, fields...)
 }
 
-func Interceptor(ctx context.Context,
-	req any,
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler,
-) (any, error) {
-	guid := uuid.New().String()
-	ctx = context.WithValue(ctx, RequestId, guid)
-	GetLoggerFromCtx(ctx).Info(ctx,
-		"request",
-		zap.String("method", info.FullMethod),
-		zap.Time("request time", time.Now()),
-	)
+func InterceptorWithLogger(logger *Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context,
+		req any,
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (any, error) {
 
-	return handler(ctx, req)
+		guid := uuid.New().String()
+		ctx = context.WithValue(ctx, RequestId, guid)
+
+		logger.Info(ctx,
+			"request",
+			zap.String("method", info.FullMethod),
+			zap.Time("request time", time.Now()),
+		)
+
+		return handler(ctx, req)
+	}
 }

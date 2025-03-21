@@ -28,6 +28,7 @@ func main() {
 	if err != nil {
 		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to create configs", zap.Error(err))
 	}
+	fmt.Printf("%+v", cfg)
 
 	// db, err := postgres.NewDB(cfg.Postgres)
 	// if err != nil {
@@ -42,7 +43,7 @@ func main() {
 
 	srv := service.New()
 	server := grpc.NewServer(
-		grpc.UnaryInterceptor(logger.Interceptor),
+		grpc.UnaryInterceptor(logger.InterceptorWithLogger(logger.GetLoggerFromCtx(ctx))),
 	)
 	test.RegisterOrderServiceServer(server, srv)
 
