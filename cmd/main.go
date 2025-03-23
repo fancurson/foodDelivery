@@ -9,16 +9,23 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
+	// Создаем контекст с возможностью graceful shutdown
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop() // Освобождаем ресурсы после выхода
 
-	ctx := context.Background()
-	// ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	// defer stop()
 	ctx, err := logger.New(ctx)
 	if err != nil {
 		log.Fatalf("failed to initialize logger: %v", err)
@@ -46,15 +53,29 @@ func main() {
 	)
 	test.RegisterOrderServiceServer(server, srv)
 
+	rt := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err = test.RegisterOrderServiceHandlerFromEndpoint(ctx, rt, "localhost:"+strconv.Itoa(cfg.GRPCPort), opts)
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to register handler server", zap.Error(err))
+	}
+
+	go func() {
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.RestPort), rt); err != nil {
+			logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to server", zap.Error(err))
+		}
+	}()
+
 	go func() {
 		if err := server.Serve(lis); err != nil {
 			logger.GetLoggerFromCtx(ctx).Info(ctx, "failed to serve", zap.Error(err))
 		}
 	}()
 
-	select {
-	case <-ctx.Done():
-		server.Stop()
+	<-ctx.Done()
+	logger.GetLoggerFromCtx(ctx).Info(ctx, "Shutting down server...")
 
-	}
+	server.GracefulStop()
+	logger.GetLoggerFromCtx(ctx).Info(ctx, "Server Stopped")
+
 }
