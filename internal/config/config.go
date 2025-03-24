@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	POSTGRE  postgres.Config `yaml:"POSTGRES" env:"POSTGRES"`
+	Postgres postgres.Config `yaml:"POSTGRES" env:"POSTGRES"`
 	RestPort int             `yaml:"REST_PORT" env:"REST_PORT" env-default:"8081"`
 
 	GRPCPort int `yaml:"GRPC_PORT" env:"GRPC_PORT" env-default:"50051"`
