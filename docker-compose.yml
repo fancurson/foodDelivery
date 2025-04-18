@@ -11,19 +11,12 @@ services:
       - "8081:8081"   
     depends_on:
       - postgres
-  adminer:
-    image: adminer
-    restart: always
-    environment:
-      ADMINER_DESIGN: dracula # Pick a theme - https://github.com/vrana/adminer/tree/master/desi
-    ports:
-      - 8080:8080
-
+  
   postgres:
     container_name: postgres_container  
     image: 'postgres:latest'
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: 1

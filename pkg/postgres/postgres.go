@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
-	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5"
@@ -24,17 +25,26 @@ func NewDB(c Config) (*pgx.Conn, error) {
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", c.Username, c.Password, c.Host, c.Port, c.Database)
 	conn, err := pgx.Connect(context.Background(), dbUrl)
 	if err != nil {
-		return nil, fmt.Errorf("error while connecting db %w", err)
+		return nil, fmt.Errorf("error while connecting db: %w", err)
 	}
 
+	files, err := os.ReadDir("db/migrations")
+	if err != nil {
+		log.Fatal("Не могу прочитать папку миграций:", err)
+	}
+	fmt.Println("Найдены миграции:", files)
+
+	// postgres://postgres:postgres@localhost:5432/example?sslmode=disable
+	migrationStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", c.Username, c.Password, c.Host, c.Port, c.Database)
 	m, err := migrate.New(
 		"file://db/migrations",
-		dbUrl)
+		migrationStr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error while creating migrations", err)
 	}
-	if err := m.Up(); err != nil {
-		log.Fatal(err)
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatal("error while starting migrations", err)
 	}
 
 	return conn, nil

@@ -35,6 +35,7 @@ func main() {
 	if err != nil {
 		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to create configs", zap.Error(err))
 	}
+	log.Printf("%+v", cfg)
 
 	db, err := postgres.NewDB(cfg.Postgres)
 	if err != nil {
